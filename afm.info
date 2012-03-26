@@ -1,0 +1,9 @@
+;$Id$
+
+name = Greek Tax Number field
+description = ΑΦΜ
+package = Fields
+core = 7.x
+dependencies[] = field_ui
+files[] = afm.module
+files[] = afm.install

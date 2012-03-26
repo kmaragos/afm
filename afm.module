@@ -1,0 +1,122 @@
+<?php
+//$Id$
+
+/**
+ * Implements hook_field_info().
+ */
+function afm_field_info() {
+  return array(
+    'afm' => array(
+      'label' => t('ΑΦΜ'),
+      'description' => t('Εισάγετε Αριθμό Φορολογικού Μητρώου.'),
+      'default_widget' => 'afm_afm_form',
+      'default_formatter' => 'afm_default',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function afm_field_is_empty($item, $field) {
+  if($field['type'] == 'afm'){
+    if(empty($item['value'])){
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function afm_field_widget_info(){
+  return array(
+    'afm_afm_form' => array(
+      'label' => t('ΑΦΜ form'),
+      'field types' => array('afm'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_NONE,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_widget_form().
+  */
+function afm_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+ $base = $element;
+ if ($instance['widget']['type'] == 'afm_afm_form') {
+  $widget = $instance['widget'];
+  $settings = $widget['settings'];
+  $element['value'] = array(
+   '#type' => 'textfield',
+   '#title' => t('ΑΦΜ'),
+   '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+   '#element_validate' => array('_afm_value_validate'),
+  );
+ }
+ return $element;
+}
+
+/**
+ * Validation callback for an afm value element.
+ */
+function _afm_value_validate($element, &$form_state, $form){
+  $value = $element['#value'];
+  if(!empty($value)){
+    if(!ctype_digit($value)){
+      form_error($element, t('Ο ΑΦΜ αποτελείται μόνο από αριθμητικά ψηφία'));
+    }
+    if(((strlen($value) > 1) && (strlen($value) < 9)) || (strlen($value) > 9)){
+      form_error($element, t('Ο ΑΦΜ αποτελείται από 9 ψηφία'));
+    }
+    if(strlen($value) == 9){
+      if(!_afm_check($value)){
+        form_error($element, t('Ο ΑΦΜ δεν είναι έγκυρος'));
+      }
+    }
+  }
+}
+
+/**
+ * Check tax number validity
+ */
+function _afm_check($afm){
+  $remainder = 0;
+  $sum = 0;
+  for ($nn = 2, $k = 7, $sum = 0; $k >= 0; $k--, $nn += $nn){
+    $sum += $nn * ($afm[$k]);
+  }
+  $remainder = $sum % 11;
+  return ($remainder == 10)?($afm[8] == '0'):($afm[8] == $remainder);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function afm_field_formatter_info(){
+  return array(
+    'afm_default' => array(
+      'label' => t('Default'),
+      'field types' => array('afm'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function afm_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+  $element = array();
+  switch($display['type']){
+    case 'afm_default':
+      foreach($items as $delta => $item){
+        $element[$delta]['#markup'] = t('ΑΦΜ: ').$item['value'];
+      }
+      break;
+  }
+  return $element;
+}

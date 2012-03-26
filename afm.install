@@ -1,0 +1,16 @@
+<?php
+//$Id$
+
+/**
+ * Implementation of hook_field_schema().
+ */
+function afm_field_schema($field){
+  if($field['type'] == 'afm'){
+    $schema['columns']['value'] = array(
+      'type' => 'varchar',
+      'length' => '9',
+      'not null' => TRUE,
+    );
+    return $schema;
+  }
+}
