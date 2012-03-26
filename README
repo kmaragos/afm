@@ -1,0 +1,3 @@
+This module adds Greek Tax Registration Number (ΑΦΜ) field with validation for number of characters, decimal digits and valid number (public algorithm).
+
+ΑΦΜ is the tax registration number granted to individuals and companies by the Greek Ministry of Finance.
